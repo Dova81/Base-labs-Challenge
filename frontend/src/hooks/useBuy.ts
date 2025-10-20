@@ -7,8 +7,10 @@ export default function useBuy(
 ) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [popupMessage, setPopupMessage] = useState('');
+  const [error, setError] = useState(false);
   const [count, setCount] = useState(0);
+
+
 
   async function buy(clientId: string) {
     setLoading(true);
@@ -19,9 +21,7 @@ export default function useBuy(
       if (res.status === 200) {
         setMessage('Compra exitosa 🌽');
       } else if (res.status === 429) {
-        const text = 'Demasiadas solicitudes — espera 1 minuto entre compras';
-        setPopupMessage(text);
-        setTimeout(() => setPopupMessage(''), 5000);
+        setError(true);
       } else {
         setMessage('Error: ' + res.status);
       }
@@ -30,7 +30,6 @@ export default function useBuy(
         const data: StatsResponse = await getStats(apiBase, clientId);
         setCount(data.cornBought ?? 0);
       } catch (err) {
-        // ignore stats errors for now
       }
     } catch (e: unknown) {
       setMessage('Error de red');
@@ -39,5 +38,9 @@ export default function useBuy(
     }
   }
 
-  return { buy, loading, message, popupMessage, count };
+  function closePopup() {
+    setError(false);
+  }
+
+  return { buy, loading, message, error, count, closePopup };
 }

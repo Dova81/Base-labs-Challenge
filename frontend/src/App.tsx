@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import BuyButton from './components/BuyButton';
-import CornerPopup from './components/Popup';
+import BuyButton from './components/buyButton/BuyButton';
+import CornerPopup from './components/popup/Popup';
 import useBuy from './hooks/useBuy';
 
 export default function App() {
   const [clientId, setClientId] = useState('client-1');
-  const { buy, loading, message, popupMessage, count } = useBuy();
+  const { buy, loading, message, error, count, closePopup } = useBuy();
+
+  const text = 'Demasiadas solicitudes — espera 1 minuto entre compras';
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -20,11 +22,11 @@ export default function App() {
         <BuyButton loading={loading} onClick={() => buy(clientId)}>
           Comprar 1 corn
         </BuyButton>
-        {popupMessage && (
+        {error && (
           <CornerPopup
-            message={popupMessage}
+            message={text}
             onClose={() => {
-              /* noop: handled in hook */
+              closePopup();
             }}
           />
         )}

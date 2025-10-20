@@ -15,14 +15,13 @@ export class CornController {
   async buy(@Body() body: BuyDto) {
     await this.sleep(800)
     const clientId = body?.clientId ?? 'anonymous'
-    const ok = this.service.buy(clientId)
-    if(!ok) throw new HttpException('Too Many Requests', 429)
+    // Rate limiting is handled by middleware. At this point the request
+    // has already been allowed and recorded by the RateLimiterMiddleware.
     return { message: '🌽', clientId }
   }
 
   @Get('stats/:clientId')
   async stats(@Param('clientId') clientId: string){
-    await this.sleep(800)
     return { clientId, ...this.service.stats(clientId) }
   }
 }

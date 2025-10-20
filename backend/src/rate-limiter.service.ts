@@ -28,4 +28,11 @@ export class RateLimiterService {
   getLastBuy(clientId: string) {
     return this.lastBuy.get(clientId) ?? null;
   }
+
+  // check whether a buy would be allowed right now without mutating state
+  isAllowed(clientId: string) {
+    const now = Date.now();
+    const last = this.lastBuy.get(clientId) ?? 0;
+    return now - last >= this.windowMs;
+  }
 }
