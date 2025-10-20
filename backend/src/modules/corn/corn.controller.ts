@@ -15,8 +15,6 @@ export class CornController {
   async buy(@Body() body: BuyDto) {
     await this.sleep(800)
     const clientId = body?.clientId ?? 'anonymous'
-    // Rate limiting is handled by middleware. At this point the request
-    // has already been allowed and recorded by the RateLimiterMiddleware.
     return { message: '🌽', clientId }
   }
 
