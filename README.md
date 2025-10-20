@@ -1,45 +1,80 @@
-# Bob's Corn - Fullstack Rate Limiter Challenge
+# Bob's Corn — Documentación breve
 
-This repository contains a small fullstack project to solve the "Bob's Corn" challenge.
+Proyecto demo (fullstack) que implementa un sistema simple de compras con limitador de tasa en memoria.
 
-- `backend`: a minimal NestJS app exposing POST `/buy` and GET `/stats/:clientId`. It implements a simple in-memory rate limiter that allows at most 1 corn per client per minute.
-- `frontend`: a Vite + React + Tailwind app that lets clients buy corn by entering a client id and clicking a button. It shows success/failure and total corn bought.
+Estructura principal
 
-Quick start (Windows PowerShell)
+- `backend/` — NestJS. Controladores y lógica de rate limiting bajo `src/`.
+- `frontend/` — Vite + React + Tailwind. Interfaz para comprar y ver estadísticas.
+
+Qué hace
+
+- Permite registrar una "compra" de maíz para un `clientId`.
+- Mantiene un contador por cliente y la hora del último `buy`.
+- Limita a 1 compra por cliente cada 60 segundos (lógica en `backend/src/rate-limiter.service.ts`).
+
+Requisitos
+
+- Node.js (v16+ recomendado)
+- npm
+
+Cómo levantar la aplicación (PowerShell)
 
 1) Backend
 
-Open a PowerShell terminal in the `backend` folder and run:
-
 ```powershell
-cd backend; npm install
+cd backend
+npm install
 npm run dev
 ```
 
-The backend listens on http://localhost:3333.
+El backend por defecto escucha en: http://localhost:8080 (ver `backend/src/main.ts`).
+
+Comandos útiles en `backend`:
+
+- `npm run dev` — modo desarrollo.
+- `npm run build` — compilar TypeScript a `dist/`.
+- `npm run start:prod` — ejecutar build con `node`.
+- `npm test` — ejecutar jest.
 
 2) Frontend
 
-Open another PowerShell terminal in the `frontend` folder and run:
-
 ```powershell
-cd frontend; npm install
+cd frontend
+npm install
 npm run dev
 ```
 
-The frontend will run by default on http://localhost:5173 and talk to the backend at http://localhost:3333. If your backend runs elsewhere, set the environment variable `VITE_API_BASE` before starting (PowerShell):
+El frontend está configurado para correr en http://localhost:3000 (`frontend/vite.config.ts`).
+
+Si el backend usa otra URL, define `VITE_API_BASE` antes de iniciar (PowerShell):
 
 ```powershell
-$env:VITE_API_BASE = 'http://localhost:3333'; npm run dev
+$env:VITE_API_BASE = 'http://localhost:8080'; npm run dev
 ```
 
-How it works
+API — endpoints principales
 
-- Rate limiter: backend keeps an in-memory map of last purchase timestamps per client and a total counter. If a client attempts to buy again within 60 seconds, the server returns HTTP 429.
-- Frontend: simple UI to enter `clientId`, buy, and fetch stats.
+- POST /corn/buy
+	- Body: { "clientId": "string" }
+	- Respuesta 200 (si se permite): { message: "🌽", clientId }
+	- Si la compra se intenta dentro de la ventana de 60s, la operación se bloquea (lógica en servicio).
 
-Notes
+- GET /corn/stats/:clientId
+	- Respuesta 200: { clientId, cornBought: number, lastBuy: number | null }
 
-- This is a minimal demo. The backend uses in-memory storage — restarting the server resets counts. For production use, persist counters in a database or use a distributed rate-limiter (Redis, etc.).
-- To run in production, build the backend (`npm run build`) and run `node dist/main.js`.
-# Base-labs-Challenge
+Pruebas y calidad
+
+- Backend: `npm test` (jest). También hay `lint` y `format`.
+- Frontend: `npm test` (vitest). También `lint` y `format`.
+
+Notas rápidas
+
+- El rate limiter es en memoria; reiniciar el backend resetea los contadores.
+- Para producción: usar persistencia (Redis/BD) y devolver explícitamente 429 cuando una compra no esté permitida.
+
+Mejoras sugeridas
+
+- Añadir e2e tests para validar la política de rate limiting.
+- Reemplazar el store en memoria por Redis o base de datos para soportar múltiples instancias.
+
